@@ -6,17 +6,22 @@ Quadcopter control using RL and low level controller
 
 - Need to setup quadcopter env similar just like A1 env setup here: https://github.com/ikostrikov/walk_in_the_park
 
-- [ ] Sensors
+- Sensors
    - [x] Add accel and gyro sensors to the drone. (Need to validate the sensor output)
-   - Add the camera to the front of the body ? range of view and other questions for the camera.
+   - [ ] Add the camera to the front of the body ? range of view and other questions for the camera.
 
-- [ ] Reward
-   - Floating Reward
-   - Forward velocity Reward
-   - Trajectory Reward
+- Reward
+   -[x] Floating Reward
+      This is the reward structure
+      - desired_position ($\hat{q}$)= [0,0,1]
+      - actual_position ($q$)
+      reward = $r_h = exp(-100 * \sum||\hat{q} - q||^2)$
+   - [ ] Forward velocity Reward
+   - [ ] Trajectory Reward
 
 
-- [ ] Health
-    - Check the Height.
-    - Check if the trajectory is going in the similar direction.
+- Health / env failure
+    - [x] Check the Height.
+      if the RMSE > (tol*2)**2 in any axis then failure
+    - [ ] Check if the trajectory is going in the similar direction.
     

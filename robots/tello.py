@@ -43,7 +43,7 @@ class TelloObservables(base.WalkerObservables):
 
 
 class Tello(base.Walker):
-    _INIT_QPOS = np.asarray([0, 0, 1] * 4) # I am not sure what is this used for ?
+    _INIT_QPOS = np.asarray([0, 0, 0]) # joint posiition at the start of the system
     _QPOS_OFFSET = np.asarray([0.2, 0.4, 0.4] * 4) # I am not sure what is this used for ?
     # _INIT_QPOS = np.asarray([-0.1, 0.5, -1.4] * 4)
     """A composer entity representing a Jaco arm."""
