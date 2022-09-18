@@ -44,10 +44,11 @@ class Hover(composer.Task):
 
         self.floor_friction = floor_friction
         # just simple floor cause it does not matter.
+        # self._floor = robot._mjcf_root.find('geom', 'floor')
         self._floor = arenas.Floor(size=(10, 10))
 
-        for geom in self._floor.mjcf_model.find_all('geom'):
-            geom.friction = floor_friction
+        # for geom in self._floor.mjcf_model.find_all('geom'):
+            # geom.friction = floor_friction
 
         self._robot = robot
         self._floor.add_free_entity(self._robot)
@@ -65,8 +66,8 @@ class Hover(composer.Task):
         if not add_velocity_to_observations:
             self._robot.observables.sensors_velocimeter.enabled = False
 
-        if hasattr(self._floor, '_top_camera'):
-            self._floor._top_camera.remove()
+        # if hasattr(self._floor, '_top_camera'):
+        #     self._floor._top_camera.remove()
         self._robot.mjcf_model.worldbody.add('camera',
                                              name='side_camera',
                                              pos=[0, -1, 0.5],
@@ -114,7 +115,7 @@ class Hover(composer.Task):
 
         _find_non_contacting_height(physics,
                                     self._robot,
-                                    qpos=self._robot._INIT_QPOS)
+                                    qpos=None)
 
     def before_step(self, physics, action, random_state):
         pass

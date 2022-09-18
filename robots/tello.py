@@ -43,7 +43,7 @@ class TelloObservables(base.WalkerObservables):
 
 
 class Tello(base.Walker):
-    _INIT_QPOS = np.asarray([0, 0, 0]) # joint posiition at the start of the system
+    _INIT_QPOS = np.asarray([0, 0, 1]) # joint posiition at the start of the system
     _QPOS_OFFSET = np.asarray([0.2, 0.4, 0.4] * 4) # I am not sure what is this used for ?
     # _INIT_QPOS = np.asarray([-0.1, 0.5, -1.4] * 4)
     """A composer entity representing a Jaco arm."""
@@ -62,17 +62,22 @@ class Tello(base.Walker):
         if name:
             self._mjcf_root.model = name
         # Find MJCF elements that will be exposed as attributes.
-        self._root_body = self._mjcf_root.find('body', 'core')
-        self._root_body.pos[-1] = 0.125
+        self._root_body = self._mjcf_root.find('body', 'quadrotor')
+        # self._root_body.pos[-1] = 0.125
+        print(self._root_body.pos)
 
         self._joints = self._mjcf_root.find_all('joint')
 
         self._actuators = self.mjcf_model.find_all('actuator')
 
+        print(len(self._joints), len(self._actuators))
+
         # Check that joints and actuators match each other.
-        assert len(self._joints) == len(self._actuators)
-        for joint, actuator in zip(self._joints, self._actuators):
-            assert joint == actuator.joint
+        assert len(self._joints) == 0
+        assert len(self._actuators) == 4
+        #TODO why is this needed
+        # for joint, actuator in zip(self._joints, self._actuators):
+        #     assert joint == actuator.joint
 
         self.kp = 60
         if learn_kd:
