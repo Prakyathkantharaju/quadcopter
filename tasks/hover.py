@@ -36,6 +36,7 @@ class Hover(composer.Task):
     def __init__(self,
                  robot,
                  terminate_pitch_roll: Optional[float] = 30,
+                 terminate_height: bool = True,
                  physics_timestep: float = DEFAULT_PHYSICS_TIMESTEP,
                  control_timestep: float = DEFAULT_CONTROL_TIMESTEP,
                  floor_friction: Tuple[float] = (1, 0.005, 0.0001),
@@ -79,6 +80,7 @@ class Hover(composer.Task):
                            control_timestep=control_timestep)
 
         self._terminate_pitch_roll = terminate_pitch_roll
+        self._terminate_height = terminate_height
 
         self._move_speed = 0.5
 

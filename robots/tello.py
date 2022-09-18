@@ -97,16 +97,20 @@ class Tello(base.Walker):
     def action_spec(self):
         minimum = []
         maximum = []
-        for joint_, actuator in zip(self.joints, self.actuators):
-            joint = actuator.joint
-            assert joint == joint_
+        print(self.actuators)
 
-            minimum.append(joint.range[0])
-            maximum.append(joint.range[1])
+        for actuator in self.actuators:
+            print(actuator.ctrlrange)
+
+            minimum.append(actuator.ctrlrange[0])
+            maximum.append(actuator.ctrlrange[1])
 
         if self.kd is None:
             minimum.append(-1.0)
             maximum.append(1.0)
+        
+        print(minimum, maximum)
+        print([actuator.name for actuator in self.actuators])
 
         return specs.BoundedArray(
             shape=(len(minimum), ),
@@ -125,26 +129,11 @@ class Tello(base.Walker):
 
         return minimum, maximum
 
-    def apply_action(self, physics, desired_qpos, random_state):
+    def apply_action(self, physics, actions, random_state):
         # Updates previous action.
-        self._prev_actions.append(desired_qpos.copy())
-
-        joints_bind = physics.bind(self.joints)
-        qpos = joints_bind.qpos
-        qvel = joints_bind.qvel
-
-        if self.kd is None:
-            min_kd = 1
-            max_kd = 10
-
-            kd = (desired_qpos[-1] + 1) / 2 * (max_kd - min_kd) + min_kd
-            desired_qpos = desired_qpos[:-1]
-        else:
-            kd = self.kd
-
-        action = self.kp * (desired_qpos - qpos) - kd * qvel
+        self._prev_actions.append(actions.copy())
         minimum, maximum = self.ctrllimits
-        action = np.clip(action, minimum, maximum)
+        action = np.clip(actions, minimum, maximum)
 
         physics.bind(self.actuators).ctrl = action
 

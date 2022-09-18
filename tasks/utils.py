@@ -72,4 +72,4 @@ def _check_hover_status(des_position, position, tolerance = 0.01):
     des_position = des_position.reshape(1,3)
     position = position.reshape(1,3)
 
-    return (mean_squared_error(des_position, position, multioutput="raw_value") < 0.04).any(axis = 0)
+    return (mean_squared_error(des_position, position, multioutput="raw_values") < 0.04).any(axis = 0)
