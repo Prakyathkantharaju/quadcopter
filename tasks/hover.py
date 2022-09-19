@@ -60,7 +60,8 @@ class Hover(composer.Task):
 
         # NO proprioception yet for the tello env
         observables = (self._robot.observables.kinematic_sensors +
-                       [self._robot.observables.prev_action])
+                       [self._robot.observables.prev_action] + [self._robot.observables.base_position]
+                       )
         for observable in observables:
             observable.enabled = True
 

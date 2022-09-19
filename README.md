@@ -3,12 +3,42 @@ Quadcopter control using RL and low level controller
 
 
 
+# Overview of the setup
+!()[docs/images/quadcopter.png]
+
+### Observations
+- global position
+- gyroscope
+- accelerometer
+
+### action
+- Action array of size (4) controlling motor.
+- range [0,1]
+
+## Robot setup
+- Setting up the Tello robot in robots.
+- XML file in this [assets/xml](robots/assets/xml)
+- The robot will give observation and the action setup.
+
+## Task
+- Setting up the reward function, stoppage etc. 
+- Currently there is only one task `hover` like to task file is [here](tasks/hover.py)
+
+## Test scripts
+- `test_obs.py` To check the observation, reward, done and reward for each setup. This is done using dm_control setup. To run this.
+``` bash
+python tests/test_obs.py
+```
+- `test_viewer.py` To run the viewer. Using the dm_control setup. To run this.
+``` bash
+python tests/test_viewer.py
+```
+!()[docs/images/viewer_setup.gif]
+
 # Progress and problems
 ## Progress
 - The task and the env are setup.
-## Problem
 - Observation is qpos it just pos and vel of the body
-- But current setup is in the position control but need a force control where action is independent of the joint position.
 
 # Things to do
 

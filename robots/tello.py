@@ -34,11 +34,15 @@ class TelloObservables(base.WalkerObservables):
         return observable.Generic(
             lambda physics: self._entity.get_velocity(physics))
 
-    #FIXME
+    @composer.observable
+    def base_position(self):
+        return observable.Generic( lambda _: self._entity.root_body.pos)
+
+
     @property
     def kinematic_sensors(self):
         return ([
-            self.sensors_gyro, self.sensors_velocimeter, self.sensors_framequat
+            self.sensors_gyro, self.sensors_accelerometer
         ] + self._collect_from_attachments('kinematic_sensors'))
 
 
