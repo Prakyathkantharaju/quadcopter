@@ -4,7 +4,7 @@ Quadcopter control using RL and low level controller
 
 
 # Overview of the setup
-!()[docs/images/quadcopter.png]
+![](docs/images/quadcopter.png)
 
 ### Observations
 - global position
@@ -33,7 +33,11 @@ python tests/test_obs.py
 ``` bash
 python tests/test_viewer.py
 ```
-!()[docs/images/viewer_setup.gif]
+- env with random actions
+![](docs/images/hover_env.gif)
+- Viewer features
+![](docs/images/viewer_setup.gif)
+
 
 # Progress and problems
 ## Progress
