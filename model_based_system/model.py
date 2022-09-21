@@ -186,6 +186,7 @@ ang = np.array([1, 0.5, 2.7])  # some random values
 ang_vel = np.array([1, 1, 1])  # some random values
 
 lin_acc = lin.linear_acceleration(omega, ang)
+lin_acc = np.expand_dims(lin_acc, axis=1)
 
 assert lin_acc.shape == (3, 1), f'The linear acceleration should be in 3 x 1 shape'
 
@@ -197,6 +198,7 @@ a = AngAccel(I)
 # diff = T_b - np.matmul(C, ang_vel)
 # Jinv = np.linalg.inv(J)
 ang_acc = a.angular_acceleration(omega, ang, ang_vel)
+ang_acc = np.expand_dims(ang_acc, axis=1)
 
 assert ang_acc.shape == (3, 1), f'The angular acceleration should be in 3 x 1 shape'
 
