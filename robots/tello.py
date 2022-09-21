@@ -34,10 +34,18 @@ class TelloObservables(base.WalkerObservables):
         return observable.Generic(
             lambda physics: self._entity.get_velocity(physics))
 
+    # @composer.observable
+    # def base_position(self):
+    #     print(self._entity.root_body.xpos)
+    #     return observable.Generic( lambda _: self._entity.root_body.xpos)
+
     @composer.observable
     def base_position(self):
-        return observable.Generic( lambda _: self._entity.root_body.pos)
+        return observable.Generic( lambda physics : self._entity.get_position(physics))
 
+    @composer.observable
+    def base_orientation(self):
+        return observable.Generic( lambda physics : self._entity.get_orientation(physics))
 
     @property
     def kinematic_sensors(self):
@@ -178,3 +186,12 @@ class Tello(base.Walker):
     def get_velocity(self, physics):
         velocimeter = physics.bind(self.mjcf_model.sensor.velocimeter)
         return velocimeter.sensordata
+
+    def get_position(self, physics):
+        pos = physics.bind(self._root_body).xpos
+        return pos
+
+    def get_orientation(self, physics):
+        quat = physics.bind(self._root_body).xquat
+        euler = quat_to_euler(quat)
+        return euler

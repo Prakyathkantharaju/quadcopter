@@ -62,17 +62,18 @@ class ClipAction(gym.ActionWrapper):
         return np.clip(action, self.action_space.low, self.action_space.high)
 
 
-def make_env(task_name: str,
+def make_env(task_name: str = 'Hover',
              control_frequency: int = 33,
              randomize_ground: bool = True,
-             action_history: int = 1):
+             action_history: int = 1,
+             death: bool = False):
     robot = Tello(action_history=action_history)
     # robot.kd = 5
 
-    if task_name == 'A1Run-v0':
+    if task_name == 'Hover':
         task = Hover(robot,
                    control_timestep=round(1.0 / control_frequency, 3),
-                   randomize_ground=randomize_ground)
+                   randomize_ground=randomize_ground, terminate_height=False)
     else:
         raise NotImplemented
 

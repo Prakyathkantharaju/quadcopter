@@ -60,7 +60,8 @@ class Hover(composer.Task):
 
         # NO proprioception yet for the tello env
         observables = (self._robot.observables.kinematic_sensors +
-                       [self._robot.observables.prev_action] + [self._robot.observables.base_position]
+                       [self._robot.observables.prev_action] + [self._robot.observables.base_position] +
+                       [self._robot.observables.base_orientation]
                        )
         for observable in observables:
             observable.enabled = True
@@ -140,6 +141,9 @@ class Hover(composer.Task):
                 self._failure_termination = True
 
         if self._terminate_height:
+            # testing the height
+            # print(physics.bind(self._robot.root_body).xquat)
+            print(dir(physics.bind(self._robot.root_body)))
             xmat = physics.bind(self._robot.root_body).xpos
             hover = _check_hover_status(DES_POSITION, xmat)
 
