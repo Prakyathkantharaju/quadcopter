@@ -203,7 +203,8 @@ ang_acc = np.expand_dims(ang_acc, axis=1)
 assert ang_acc.shape == (3, 1), f'The angular acceleration should be in 3 x 1 shape'
 
 
-xddot = np.concatenate((lin_acc, ang_acc), axis=None)  # This is a 6 x 1 vector giving the accelerations of the system
+xddot = np.concatenate((lin_acc, ang_acc), axis=None)  
+xddot = np.expand_dims(xddot, axis=1)  # This is a 6 x 1 vector giving all the accelerations of the system
 
 
 
