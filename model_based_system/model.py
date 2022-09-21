@@ -32,6 +32,7 @@ class LinAccel(object):
         R = np.array([[C_phi*C_psi, (C_phi*S_psi*S_theta)-(S_phi*C_theta), (C_phi*S_psi*C_theta)+(S_phi*S_theta)],
                       [S_phi*C_psi, (S_phi*S_psi*S_theta)+(C_phi*C_theta), (S_phi*S_psi*C_theta)-(C_phi*S_theta)],
                       [-S_psi, C_psi*S_theta, C_psi*C_theta]])
+        R = np.squeeze(R)
 
         return R
 
@@ -43,7 +44,7 @@ class LinAccel(object):
         :return: linear acceleration vector : Shape = 3 x 1
         """
         w **= 2
-        T = np.array([0, 0, self._k*(w[0] + w[1] + w[2] + w[3])])
+        T = np.array([0, 0, self._k*(w[0] + w[1] + w[2] + w[3])], dtype=object)
         G = np.array([0, 0, -self._g]) / self._m
         R = self.Rotation_matrix(ang)
         thrust = R.dot(T) / self._m
@@ -149,6 +150,7 @@ class AngAccel(Torque):
     def angular_acceleration(self, w: npt.ArrayLike, ang: npt.ArrayLike, vel: npt.ArrayLike) -> np.ndarray:
         t = Torque(self._l, self._k, self._b)
         T_b = t(w)
+        T_b = np.squeeze(T_b)
 
         J = self.Jacobian(ang)
         C = self.Coroilis_force(ang, vel)
@@ -178,6 +180,10 @@ omega = np.zeros((4, 1))
 # T_b = t(w)
 #
 lin = LinAccel(m, k, g)
+
+ang = np.array([1, 0.5, 2.7])  # some random values
+ang_vel = np.array([1, 1, 1])  # some random values
+
 lin_acc = lin.linear_acceleration(omega, ang)
 
 assert lin_acc.shape == (3, 1), f'The linear acceleration should be in 3 x 1 shape'
