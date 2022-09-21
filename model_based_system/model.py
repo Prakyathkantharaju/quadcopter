@@ -1,5 +1,6 @@
 # Author prakyath 09/19/2022
 # Subramanian - Completed the angular acceleration code section and included Linear acceleration EOMs - 09/19/2022
+# Subramanian - Tested the code and fixed the bugs - 09/21/2022
 from typing import Any
 import numpy as np
 import numpy.typing as npt
@@ -203,6 +204,4 @@ assert ang_acc.shape == (3, 1), f'The angular acceleration should be in 3 x 1 sh
 xddot = np.concatenate((lin_acc, ang_acc), axis=None)  # This is a 6 x 1 vector giving the accelerations of the system
 
 
-
-# TODO: Low-level PD controller
 
