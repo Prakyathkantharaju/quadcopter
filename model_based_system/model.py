@@ -83,7 +83,7 @@ class Torque:
         assert w.shape == (4,1), f"The omega shape should be (4,1), currently it is {w.shape}"
         w **= 2
         T_b = np.array([self._l * self._k * (-w[1] + w[3]),
-                        self._l * self._k * (-w[0] + w[4]),
+                        self._l * self._k * (-w[0] + w[2]),
                         self._b * (w[0] - w[1] + w[2] - w[3])])
         return T_b.reshape(3, 1)
 
@@ -137,7 +137,7 @@ class AngAccel(Torque):
         C_12 = (I[1] - I[2]) * (vel[0] * C_theta * S_psi + vel[1] * S_psi**2 * C_theta) + (I[2] - I[1]) * vel[1] * C_psi**2 * C_theta - I[0]*vel[1]*C_theta
         C_13 = (I[2] - I[1]) * vel[1] * C_psi * S_psi * C_theta ** 2
         C_21 = (I[2] - I[1]) * (vel[0] * C_psi * S_psi + vel[1] * S_psi * C_theta) + (I[1] - I[2]) * vel[1] * C_psi**2 * C_theta + I[0]
-        C_22 = (I[3] - I[2]) * vel[2] * C_phi * S_phi
+        C_22 = (I[2] - I[1]) * vel[2] * C_phi * S_phi
         C_23 = -I[0] * vel[1]*S_theta*C_theta + I[1]*vel[1]*(S_phi ** 2)*S_theta*C_theta + I[2]*vel[1]*(C_phi ** 2)*S_theta*C_theta
         C_31 = ((I[1] - I[2])*vel[2]*C_phi*S_phi*(C_theta ** 2)) - I[0]*vel[0]*C_theta
         C_32 = (I[2] - I[1])*vel[2]*C_phi*S_phi*(C_theta ** 2) + ((I[1] - I[2])*vel[2]*(C_phi ** 2)*C_theta) + I[0]*vel[0]*S_theta*C_theta - I[1]*vel[0]*(S_phi ** 2)*S_theta*C_theta - I[2]*vel[0]*(C_phi ** 2)*S_theta*C_theta
