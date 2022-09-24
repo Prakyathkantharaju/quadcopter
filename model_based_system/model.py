@@ -1,7 +1,7 @@
 # Author prakyath 09/19/2022
 # Subramanian - Completed the angular acceleration code section and included Linear acceleration EOMs - 09/19/2022
 # Subramanian - Tested the code and fixed the bugs - 09/21/2022
-# Subramanian - Added animation code (Not tested) - 09/23/2022
+# Subramanian - Added animation code lines 171-262 (Not tested) - 09/23/2022
 from typing import Any
 import numpy as np
 import numpy.typing as npt
