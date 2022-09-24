@@ -1,6 +1,7 @@
 # Author prakyath 09/19/2022
 # Subramanian - Completed the angular acceleration code section and included Linear acceleration EOMs - 09/19/2022
 # Subramanian - Tested the code and fixed the bugs - 09/21/2022
+# Subramanian - Created a class animation code for the quadcopter model in this file (Not tested) - 09/23/2022
 from typing import Any
 import numpy as np
 import numpy.typing as npt
@@ -163,9 +164,102 @@ class AngAccel(Torque):
 
         return ang_acc
 
+    
+ class Animation(LinAccel):
+    def __init__(self, pause: float, fps: float, m: float, k: float, g: float, l: float, b: float) -> None:
+        """
+        This class does the animation of a quadcopter in 3D environment. Linear Acceleration class is inherited to get
+        get the rotation matrix details.
+        :param pause: To pause the animation
+        :param fps: number of frames per second for animation
+        :param m: mass of the quadcopter
+        :param k: lift constant
+        :param g: acceleration due to gravity
+        :param l: length between COM and the fins
+        :param b: drag/damping dimensional constant
+        """
+        super().__init__(m, k, g)
+        self.pause = pause
+        self.fps = fps
+        self.m = m
+        self.k = k
+        self.g = g
+        self.l = l
+        self.b = b
+
+    def animate(self, t, Xpos: npt.ArrayLike, Xang: npt.ArrayLike) -> None:
+        """
+        This function animates the drone simulation.
+        :param t: integration time step
+        :param Xpos: Gets the 3-D linear positions of the drone: [x, y, z]
+        :param Xang: Gets the 3-D angular positions of the drone: [theta, psi, phi] in radians
+        :return: None (Does the animation of drone hovering)
+        """
+        t_interp = np.arange(t[0],t[len(t)-1], 1 / self.fps)
+        [m, n] = np.shape(Xpos)
+        shape = (len(t_interp), n)
+        Xpos_interp = np.zeros(shape)
+        Xang_interp = np.zeros(shape)
+        l = self.l
+
+        for i in range(0, n):
+            fpos = interpolate.interp1d(t, Xpos[:,i])
+            Xpos_interp[:,i] = fpos(t_interp)
+            fang = interpolate.interp1d(t, Xang[:,i])
+            Xang_interp[:,i] = fang(t_interp)
+
+
+        axle_x = np.array([[-l/2, 0, 0],
+                           [l/2, 0, 0]])
+        axle_y = np.array([[0, -l/2,  0],
+                           [0, l/2,   0]])
+
+
+        [p2,q2] = np.shape(axle_x)
+
+        for ii in range(0,len(t_interp)):
+            x = Xpos_interp[ii,0]
+            y = Xpos_interp[ii,1]
+            z = Xpos_interp[ii,2]
+            theta = Xang_interp[ii,0]
+            psi = Xang_interp[ii,1]
+            phi = Xang_interp[ii,2]
+            ang = np.array([theta, psi, phi])
+            R = self.Rotation_matrix(ang)
+
+            new_axle_x = np.zeros((p2,q2))
+            for i in range(0,p2):
+                r_body = axle_x[i,:]
+                r_world = R.dot(r_body)
+                new_axle_x[i, :] = r_world
+
+            new_axle_x = np.array([x, y, z]) + new_axle_x
+
+            new_axle_y = np.zeros((p2,q2))
+            for i in range(0,p2):
+                r_body = axle_y[i,:]
+                r_world = R.dot(r_body)
+                new_axle_y[i, :] = r_world
+
+            new_axle_y = np.array([x, y, z]) + new_axle_y
+
+            ax = p3.Axes3D(fig)
+            axle1, = ax.plot(new_axle_x[:, 0],new_axle_x[:, 1],new_axle_x[:, 2], 'ro-', linewidth=3)
+            axle2, = ax.plot(new_axle_y[:, 0], new_axle_y[:, 1], new_axle_y[:, 2], 'bo-', linewidth=3)
+
+            ax.set_xlim(-0.5, 0.5)
+            ax.set_ylim(-0.5, 0.5)
+            ax.set_zlim(-0.5, 0.5)
+            ax.view_init(azim=-72, elev=20)
+
+            plt.pause(self.pause)
+
+        plt.close()
 
 
 # Assuming some values for sake of completeness of the code. For our purpose, we should figure that out for the quadcopter
+pause = 0.01
+fps = 30
 l = 0.225   # in m
 k = 2.980e-6
 b = 1.140e-7
@@ -205,6 +299,15 @@ assert ang_acc.shape == (3, 1), f'The angular acceleration should be in 3 x 1 sh
 
 xddot = np.concatenate((lin_acc, ang_acc), axis=None)  
 xddot = np.expand_dims(xddot, axis=1)  # This is a 6 x 1 vector giving all the accelerations of the system
+
+t = np.linspace(0, 1, 101)
+X_pos = np.array([0, 0, 2])
+X_ang = np.array([0, 0, 0])
+
+
+fig = plt.figure()
+anim = Animation(pause, fps, m, k, g, l, b)
+anim.animate(t, X_pos, X_ang)
 
 
 
