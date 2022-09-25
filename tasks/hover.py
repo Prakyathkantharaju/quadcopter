@@ -20,10 +20,14 @@ DES_POSITION  = np.array([0,0,1])
 
 def get_hover_reward(position: np.ndarray, time: float, action: np.ndarray) -> float:
     action = np.abs(action)
-    pos_reward = np.exp( np.array([-1000, -1000, -1000]).reshape(1,3) @ mean_squared_error(position.reshape(1,3), DES_POSITION.reshape(1,3), multioutput="raw_values").reshape(3,1) )
+    pos_reward = np.exp( np.array([-10000, -10000, -10000]).reshape(1,3) @ mean_squared_error(position.reshape(1,3), DES_POSITION.reshape(1,3), multioutput="raw_values").reshape(3,1) )
     act_reward = np.exp(  -1 * action.reshape(-1,) @  action.reshape(-1,) )
-    time_reward = np.exp(- 10 + time)
-    reward = rewards.tolerance(pos_reward, bounds=(0,1))
+    if time < 100:
+        time_reward = np.exp(- 100 + time)
+    else:
+        time_reward = 1
+    reward = rewards.tolerance(pos_reward + act_reward + time_reward, bounds=(0,1))
+    # print(pos_reward , time_reward , act_reward)
     # print(10 * pos_reward + time_reward * 10 + act_reward * 10, pos_reward)
 
     # adding time as reward.

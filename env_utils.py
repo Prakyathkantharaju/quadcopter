@@ -11,6 +11,8 @@ from dm_control import composer
 
 from robots.tello import Tello
 from tasks.hover import Hover
+from gym.wrappers import RecordEpisodeStatistics
+
 
 
 
@@ -80,6 +82,9 @@ def make_env(task_name: str = 'Hover',
     env = composer.Environment(task, strip_singleton_obs_buffer_dim=True)
 
     env = DMCGYM(env)
+
+    env = RecordEpisodeStatistics(env)
+
     # env = FlattenObservation(env)
 
     return env
