@@ -18,13 +18,16 @@ DEFAULT_PHYSICS_TIMESTEP = 0.001
 
 DES_POSITION  = np.array([0,0,1])
 
-#TODO needs more testing
-def get_hover_reward(position: float):
-    pos_reward = np.exp( np.array([-1, -1, -10]).reshape(1,3) @ mean_squared_error(position.reshape(1,3), DES_POSITION.reshape(1,3), multioutput="raw_values").reshape(3,1) )
-
+def get_hover_reward(position: np.ndarray, time: float, action: np.ndarray) -> float:
+    action = np.abs(action)
+    pos_reward = np.exp( np.array([-1000, -1000, -1000]).reshape(1,3) @ mean_squared_error(position.reshape(1,3), DES_POSITION.reshape(1,3), multioutput="raw_values").reshape(3,1) )
+    act_reward = np.exp(  -1 * action.reshape(-1,) @  action.reshape(-1,) )
+    time_reward = np.exp(- 10 + time)
     reward = rewards.tolerance(pos_reward, bounds=(0,1))
+    # print(10 * pos_reward + time_reward * 10 + act_reward * 10, pos_reward)
 
-    return float(10 * pos_reward  if reward == 1 else reward * 10)# [0, 1] => [0, 10]
+    # adding time as reward.
+    return float(10 * pos_reward + time_reward * 10 + act_reward * 10 if reward == 1 else reward * 10)# [0, 1] => [0, 10]
 
 
 class Hover(composer.Task):
@@ -55,20 +58,22 @@ class Hover(composer.Task):
         #                [self._robot.observables.prev_action])
 
         # NO proprioception yet for the tello env
-        observables = ( self._robot.observables.kinematic_sensors +
-                       [self._robot.observables.prev_action] + [self._robot.observables.base_position] +
-                       [self._robot.observables.base_orientation]
-                       )
+        # observables = ( self._robot.observables.kinematic_sensors +
+        #                [self._robot.observables.prev_action] + [self._robot.observables.base_position] +
+        #                [self._robot.observables.base_orientation]
+        #                )
 
-        observables = ( self._robot.observables.kinematic_sensors +
-                       [self._robot.observables.base_position] +
-                       [self._robot.observables.base_orientation]
+        observables = ( self._robot.observables.kinematic_sensors #+
+                    #    [self._robot.observables.base_position] +
+                    #    [self._robot.observables.base_orientation]
                        )
         for observable in observables:
             observable.enabled = True
 
         if not add_velocity_to_observations:
             self._robot.observables.sensors_velocimeter.enabled = False
+
+        self._action = np.array([0,0,0,0])
 
         # if hasattr(self._floor, '_top_camera'):
         #     self._floor._top_camera.remove()
@@ -87,14 +92,13 @@ class Hover(composer.Task):
 
         self._move_speed = 0.5
 
-    def get_reward(self, physics):
+    def get_reward(self, physics) -> float:
         xmat = physics.bind(self._robot.root_body).xpos
         # _, pitch, _ = tr.rmat_to_euler(xmat, 'XYZ')
         # velocimeter = physics.bind(self._robot.mjcf_model.sensor.velocimeter)
-
         # gyro = physics.bind(self._robot.mjcf_model.sensor.gyro)
 
-        return get_hover_reward(position=xmat)
+        return get_hover_reward(position=xmat, time = physics.time(), action=self._action)
 
     def initialize_episode_mjcf(self, random_state):
         super().initialize_episode_mjcf(random_state)
@@ -126,6 +130,7 @@ class Hover(composer.Task):
         pass
 
     def before_substep(self, physics, action, random_state):
+        self._action = action
         self._robot.apply_action(physics, action, random_state)
 
     def action_spec(self, physics):
@@ -134,17 +139,18 @@ class Hover(composer.Task):
     def after_step(self, physics, random_state):
         self._failure_termination = False
 
-        if self._terminate_pitch_roll is not None:
-            roll, pitch, _ = self._robot.get_roll_pitch_yaw(physics)
+        # if self._terminate_pitch_roll is not None:
+        #     roll, pitch, _ = self._robot.get_roll_pitch_yaw(physics)
 
-            if (np.abs(roll) > self._terminate_pitch_roll
-                    or np.abs(pitch) > self._terminate_pitch_roll):
-                self._failure_termination = True
+            # if (np.abs(roll) > self._terminate_pitch_roll
+            #         or np.abs(pitch) > self._terminate_pitch_roll):
+            #     self._failure_termination = True
 
         if self._terminate_height:
             # testing the height
             # print(physics.bind(self._robot.root_body).xquat)
             # print(dir(physics.bind(self._robot.root_body)))
+            # print(physics.time())
             xmat = physics.bind(self._robot.root_body).xpos
             hover = _check_hover_status(DES_POSITION, xmat)
 

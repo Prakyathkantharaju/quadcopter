@@ -5,6 +5,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 from env_utils import make_env
 from stable_baselines3 import PPO
+from stable_baselines3.common.evaluation import evaluate_policy
 
 
 env = make_env()
@@ -17,42 +18,44 @@ print(len(obs))
 print(env.observation_space)
 
 model = PPO("MlpPolicy", env, verbose=1)
+# reload last policy
+# model.load("RL/hover_PPO")
 
-# model.learn(total_timesteps=1000000, log_interval=3)
+model.learn(total_timesteps=1000000, log_interval=3)
 
-# model.save("hover_PPO")
+model.save("hover_PPO")
 
 # Used post learning
 position = []
 orientation = []
 action_history = [] 
-
-model.load("RL/hover_PPO")
+# model.load("RL/hover_PPO")
 
 obs,_ = env.reset()
-position.append(obs[3:6])
-orientation.append(obs[:3])
+# position.append(obs[3:6])
+# orientation.append(obs[:3])
 # while True:
-for i in range(2000):
+for i in range(1000):
     action, _states = model.predict(obs)
+    # action = env.action_space.sample()
     action_history.append(action)
     obs, rewards, dones,_, info = env.step(action)
     env.render("human")
-    print(action)
-    position.append(obs[3:6])
-    orientation.append(obs[:3])
-    # if dones:
-        # break
+    print(dones)
+    # position.append(obs[3:6])
+    # orientation.append(obs[:3])
+    if dones:
+        break
 
 import matplotlib.pyplot as plt
 
-plt.figure()
-plt.plot(position)
-plt.title('position')
+# plt.figure()
+# plt.plot(position)
+# plt.title('position')
 
-plt.figure()
-plt.plot(orientation)
-plt.title("orientation")
+# plt.figure()
+# plt.plot(orientation)
+# plt.title("orientation")
 
 
 plt.figure()
@@ -62,10 +65,4 @@ plt.title("action")
 
 plt.show()
 
-# obs = env.reset()
-# while True:
-#     action, _states = model.predict(obs, deterministic=True)
-#     obs, reward, done, info = env.step(action)
-#     env.render("human")
-#     if done:
-#       obs = env.reset()
+print(evaluate_policy(model, env, n_eval_episodes=100))
