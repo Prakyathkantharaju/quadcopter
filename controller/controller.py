@@ -18,7 +18,7 @@ class Controller:
         # Constants
         self.g = 9.8
         self.m = 0.2
-        self.I = np.array([4.8e-3, 4.8e-3, 8.8e-3])
+        self.I = np.array([4.8e-3, 4.8e-3, 4.8e-3])
 
     def _get_torques(self, vertical: npt.ArrayLike, ang: npt.ArrayLike, desired_state:npt.ArrayLike) -> np.ndarray:
         """Get the torque given the vertical, ang and desired_state
@@ -43,7 +43,7 @@ class Controller:
         T_omega = (self.K_omega[1] * (desired_state[7] - ang[2,1]) + self.K_omega[0] * (desired_state[6] - ang[2,0])) * self.I[2]
 
 
-        return np.array([T, T_psi, T_theta, T_omega])
+        return np.array([T[0], T_psi, T_theta, T_omega])
 
     def get_action(self, desired_action: npt.ArrayLike, ang: npt.ArrayLike, translation: npt.ArrayLike) -> np.ndarray:
         """Get the control action given desired and ang, translation
@@ -59,8 +59,11 @@ class Controller:
         """
 
         T = self._get_torques(vertical=translation[2,:].reshape(2,1),ang=ang, desired_state=desired_action)
+        print(T)
 
-        w_1 = np.sqrt(T[0] / (4 * self.k) - T[2] / (2 * self.k * self.l) - T[3] / (4 * self.b))
+        # w_1 = np.sqrt(T[0] / (4 * self.k) - T[2] / (2 * self.k * self.l) - T[3] / (4 * self.b))
+        w_1 = np.sqrt((T[0] / (4 * self.k)) - (T[2] / (2 * self.k * self.l)) - (T[3] / (4 * self.b)))
+        print((T[0] / (4 * self.k)) , (T[2] / (2 * self.k * self.l)),  (T[3] / (4 * self.b)))
         w_2 = np.sqrt(T[0] / (4 * self.k) - T[1] / (2 * self.k * self.l) + T[3] / (4 * self.b))
         w_3 = np.sqrt(T[0] / (4 * self.k) + T[2] / (2 * self.k * self.l) - T[3] / (4 * self.b))
         w_4 = np.sqrt(T[0] / (4 * self.k) + T[1] / (2 * self.k * self.l) + T[3] / (4 * self.b))

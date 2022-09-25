@@ -51,7 +51,7 @@ class TelloObservables(base.WalkerObservables):
     def kinematic_sensors(self):
         return ([
             self.sensors_gyro, self.sensors_accelerometer
-        ] + self._collect_from_attachments('kinematic_sensors'))
+        ])
 
 
 class Tello(base.Walker):
@@ -76,13 +76,11 @@ class Tello(base.Walker):
         # Find MJCF elements that will be exposed as attributes.
         self._root_body = self._mjcf_root.find('body', 'quadrotor')
         # self._root_body.pos[-1] = 0.125
-        print(self._root_body.pos)
 
         self._joints = self._mjcf_root.find_all('joint')
 
         self._actuators = self.mjcf_model.find_all('actuator')
 
-        print(len(self._joints), len(self._actuators))
 
         # Check that joints and actuators match each other.
         assert len(self._joints) == 0
@@ -109,10 +107,8 @@ class Tello(base.Walker):
     def action_spec(self):
         minimum = []
         maximum = []
-        print(self.actuators)
 
         for actuator in self.actuators:
-            print(actuator.ctrlrange)
 
             minimum.append(actuator.ctrlrange[0])
             maximum.append(actuator.ctrlrange[1])
@@ -121,8 +117,6 @@ class Tello(base.Walker):
             minimum.append(-1.0)
             maximum.append(1.0)
         
-        print(minimum, maximum)
-        print([actuator.name for actuator in self.actuators])
 
         return specs.BoundedArray(
             shape=(len(minimum), ),

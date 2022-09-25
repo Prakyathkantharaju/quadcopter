@@ -13,9 +13,8 @@ env = test_env_viewer()
 action_spec = env.action_spec()
 
 def policy(time):
-    action = np.random.uniform(low=action_spec.minimum,
-                        high=action_spec.maximum,
-                        size=action_spec.shape)
+    action = [10,-10,10,-10]
+    # print(dir(env))
     return action
 
 viewer.launch(env, policy=policy)

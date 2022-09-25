@@ -1,3 +1,4 @@
+from audioop import mul
 from typing import Optional, Tuple
 
 import dm_control.utils.transformations as tr
@@ -19,16 +20,11 @@ DES_POSITION  = np.array([0,0,1])
 
 #TODO needs more testing
 def get_hover_reward(position: float):
-    
-    pos_reward = np.exp( -100 * mean_squared_error(position, DES_POSITION) )
-    # bounds are 0, 1 
-    reward = rewards.tolerance(pos_reward,
-                               bounds=(0, 1),
-                               margin=0,
-                               value_at_margin=0,
-                               sigmoid='linear')
+    pos_reward = np.exp( np.array([-1, -1, -10]).reshape(1,3) @ mean_squared_error(position.reshape(1,3), DES_POSITION.reshape(1,3), multioutput="raw_values").reshape(3,1) )
 
-    return 10 * reward  # [0, 1] => [0, 10]
+    reward = rewards.tolerance(pos_reward, bounds=(0,1))
+
+    return float(10 * pos_reward  if reward == 1 else reward * 10)# [0, 1] => [0, 10]
 
 
 class Hover(composer.Task):
@@ -59,8 +55,13 @@ class Hover(composer.Task):
         #                [self._robot.observables.prev_action])
 
         # NO proprioception yet for the tello env
-        observables = (self._robot.observables.kinematic_sensors +
+        observables = ( self._robot.observables.kinematic_sensors +
                        [self._robot.observables.prev_action] + [self._robot.observables.base_position] +
+                       [self._robot.observables.base_orientation]
+                       )
+
+        observables = ( self._robot.observables.kinematic_sensors +
+                       [self._robot.observables.base_position] +
                        [self._robot.observables.base_orientation]
                        )
         for observable in observables:
@@ -143,7 +144,7 @@ class Hover(composer.Task):
         if self._terminate_height:
             # testing the height
             # print(physics.bind(self._robot.root_body).xquat)
-            print(dir(physics.bind(self._robot.root_body)))
+            # print(dir(physics.bind(self._robot.root_body)))
             xmat = physics.bind(self._robot.root_body).xpos
             hover = _check_hover_status(DES_POSITION, xmat)
 
@@ -158,6 +159,9 @@ class Hover(composer.Task):
             return 0.0
         else:
             return 1.0
+
+    def get_orientation(self, physics):
+        print(self._robot.get_orientation(physics))
 
     @property
     def root_entity(self):

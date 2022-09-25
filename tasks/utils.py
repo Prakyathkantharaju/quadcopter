@@ -65,7 +65,7 @@ def _find_non_contacting_qpos(physics, random_state, walker, maxiter=1000):
         return None
 
 
-def _check_hover_status(des_position, position, tolerance = 0.001):
+def _check_hover_status(des_position, position, tolerance = 0.0001):
     """ checks if the hovering in the desired range, if then returns True, else false
     """
     tol = (tolerance*2)**2

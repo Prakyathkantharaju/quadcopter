@@ -33,10 +33,14 @@
 		</body>
 	</worldbody>
     <actuator>
-        <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0. -0.1" site="motor0" name="act0"/>
+        <!-- <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0. -0.1" site="motor0" name="act0"/>
         <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0.  0.1" site="motor1" name="act1"/>
         <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0. -0.1" site="motor2" name="act2"/>
-        <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0.  0.1" site="motor3" name="act3"/>
+        <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0.  0.1" site="motor3" name="act3"/> -->
+		<velocity ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" site="motor0" kv="1" name="act0"/>
+		<velocity ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" site="motor1" kv="-1" name="act1"/>
+		<velocity ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" site="motor2" kv="1" name="act2"/>
+		<velocity ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" site="motor3" kv="-1" name="act3"/>
 	</actuator>
 	<sensor>
 		<accelerometer name="accel" site="imu_site" />
