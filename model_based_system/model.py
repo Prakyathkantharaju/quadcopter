@@ -178,7 +178,7 @@ class AngAccel(Torque):
         :param m: mass of the quadcopter
         :param k: lift constant
         :param g: acceleration due to gravity
-        :param l: length between COM and the fins
+        :param l: length between COM and the fins/axles
         :param b: drag/damping dimensional constant
         """
         super().__init__(m, k, g)
@@ -307,9 +307,14 @@ xddot = np.concatenate((lin_acc, ang_acc), axis=None)
 xddot = np.expand_dims(xddot, axis=1)  # This is a 6 x 1 vector giving all the accelerations of the system
 
 t = np.linspace(0, 1, 101)
-X_pos = np.array([0, 0, 2])
-X_ang = np.array([0, 0, 0])
+X_pos_sing = np.array([0, 0, 2])
+X_ang_sing = np.array([0, 0, 0])
 
+X_pos = np.zeros((len(t), 3))  # Just a random input positions. Should replace this with the values obtained from the quadcopter dynamics.
+X_ang = np.zeros((len(t), 3))
+for i in range(len(t)):
+    X_pos[i] = X_pos_sing
+    X_ang[i] = X_ang_sing
 
 fig = plt.figure()
 anim = Animation(pause, fps, m, k, g, l, b)
