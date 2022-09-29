@@ -1,4 +1,6 @@
-from model_workinprogress import LinAccel, AngAccel, Animation
+# Author: Subramanian - Added the code that simulates the drone using Python Matplotlib animation - 09/29/2022
+
+from model import LinAccel, AngAccel, Animation
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
