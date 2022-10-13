@@ -2,7 +2,7 @@
 # Subramanian - Completed the angular acceleration code section and included Linear acceleration EOMs - 09/19/2022
 # Subramanian - Tested the code and fixed the bugs - 09/21/2022
 # Subramanian - Modified animation code lines (Tested and working). Just simulation of drone falling - 09/29/2022
-# TODO: Work on simulating the model with controller in the loop.
+# Subramanian - Fixed some bugs in Coriolis force function - 10/13/2022
 from typing import Any
 import numpy as np
 import numpy.typing as npt
@@ -60,27 +60,33 @@ class LinAccel(object):
         Ay = A[1]
         Az = A[2]
         lin_vel = np.array([X_lin[3], X_lin[4], X_lin[5]], dtype='float64')
+        lin_vel = lin_vel.reshape(3, 1)
         # lin_vel = np.expand_dims(lin_vel, axis=1)
-        ang = np.array([X_ang[self.i][0], X_ang[self.i][1], X_ang[self.i][2]], dtype='float64')
+        ang = np.array([X_ang[0], X_ang[1], X_ang[2]], dtype='float64')
+        ang = ang.reshape(3, 1)
         w1 = w[0]
         w2 = w[1]
         w3 = w[2]
         w4 = w[3]
         T = np.array([0, 0, self._k * (w1**2 + w2**2 + w3**2 + w4**2)], dtype='float64')
-        G = np.array([0, 0, -self._g]) / self._m
+        T = T.reshape(3, 1)
+        G = np.array([0, 0, -self._g])
+        G = G.reshape(3, 1)
         R = self.Rotation_matrix(ang)
         thrust = R.dot(T) / self._m
         drag_coeffs = np.array([[Ax, 0, 0],
                                 [0, Ay, 0],
                                 [0, 0, Az]], dtype='float64')
         drag_dyn = drag_coeffs.dot(lin_vel)
+        drag_dyn = drag_dyn.reshape(3, 1)
         drag = drag_dyn / self._m
         lin_acc = G + thrust - drag
         # lin_acc = np.expand_dims(lin_acc, axis=1)
         lin_dot = np.concatenate((lin_vel, lin_acc))
-        self.i += 1
-        if self.i == len(X_ang):
-            self.i -= 1
+        lin_dot = lin_dot.reshape(6,)
+        # self.i += 1
+        # if self.i == len(X_ang):
+        #     self.i -= 1
         return lin_dot
 
 
@@ -98,14 +104,14 @@ class Torque:
         k: float -> motor dimensional constant
         b: float -> damping dimensional constant
         """
-        l = 0.225  # in m
-        k = 2.980e-6  # this is to be found via calculation
-        b = 1.140e-7  # this is to be found via calculation
+        # l = 0.225  # in m
+        # k = 2.980e-6  # this is to be found via calculation
+        # b = 1.140e-7  # this is to be found via calculation
         self._l = l
         self._k = k
         self._b = b
 
-    def __call__(self, w) -> np.ndarray:
+    def __call__(self, w: npt.ArrayLike) -> np.ndarray:
         """
         Get the Torque vector
         w: motor angular velocity in shape  (4,1)
@@ -123,15 +129,16 @@ class Torque:
 
 class AngAccel(Torque):
     def __init__(self, I: npt.ArrayLike, ) -> None:
+        def __init__(self, I, l, k, b) -> None:
         """
         Calculate angular accelerations equation (20) in the pdf.
         given:
             Inertia matrix: (1x3)
         """
-        super().__init__()
-        l = 0.225  # in m
-        k = 2.980e-6  # this is to be found via calculation
-        b = 1.140e-7  # this is to be found via calculation
+        super().__init__(l, k, b)
+        # l = 0.225  # in m
+        # k = 2.980e-6  # this is to be found via calculation
+        # b = 1.140e-7  # this is to be found via calculation
         self.I = I
         self._l = l
         self._k = k
@@ -150,8 +157,7 @@ class AngAccel(Torque):
                       [0, I[1] * C(ang[0]) ** 2 + I[2] * S(ang[0]) ** 2,
                        (I[1] - I[2]) * C(ang[0]) * S(ang[0]) * C(ang[1])],
                       [-I[0] * S(ang[1]), (I[1] - I[2]) * C(ang[0]) * S(ang[0]) * C(ang[1]),
-                       I[0] * S(ang[1]) ** 2 + I[1] * S(ang[0]) ** 2 * C(ang[1]) ** 2 + I[2] * C(ang[0]) ** 2 * C(
-                           ang[1]) ** 2]])
+                       I[0] * S(ang[1]) ** 2 + I[1] * S(ang[0]) ** 2 * C(ang[1]) ** 2 + I[2] * C(ang[0]) ** 2 * C(ang[1]) ** 2]])
 
         assert J.shape == (3, 3), f"jacobian is not in correct shape"
 
@@ -176,21 +182,20 @@ class AngAccel(Torque):
 
         # getting indiviual terms
         C_11 = 0
-        C_12 = (I[1] - I[2]) * (vel[1] * C_theta * S_theta + vel[2] * S_theta ** 2 * C_psi) + (I[2] - I[1]) * vel[2] * \
-               C_theta ** 2 * C_psi - I[0] * vel[2] * C_psi
+        C_12 = ((I[1] - I[2]) * ((vel[1] * C_theta * S_theta) + (vel[2] * S_theta ** 2 * C_psi))) + ((I[2] - I[1]) * vel[2] *
+               C_theta ** 2 * C_psi) - (I[0] * vel[2] * C_psi)
         C_13 = (I[2] - I[1]) * vel[2] * C_theta * S_theta * C_psi ** 2
-        C_21 = (I[2] - I[1]) * (vel[1] * C_theta * S_theta + vel[2] * S_theta * C_psi) + (I[1] - I[2]) * vel[2] * \
-               C_theta ** 2 * C_psi + I[0] * vel[2] * C_psi
+        C_21 = ((I[2] - I[1]) * (vel[1] * C_theta * S_theta + vel[2] * S_theta * C_psi)) + ((I[1] - I[2]) * vel[2] *
+               C_theta ** 2 * C_psi) + (I[0] * vel[2] * C_psi)
         C_22 = (I[2] - I[1]) * vel[0] * C_theta * S_theta
-        C_23 = -I[0] * vel[2] * S_psi * C_psi + I[1] * vel[2] * (S_theta ** 2) * S_psi * C_psi + I[2] * vel[2] * (
-                    C_theta ** 2) * S_psi * C_psi
-        C_31 = ((I[1] - I[2]) * vel[2] * C_phi * S_phi * (C_psi ** 2)) - I[0] * vel[1] * C_psi
-        C_32 = (I[2] - I[1]) * vel[1] * C_theta * S_theta * S_psi + (
-                    (I[1] - I[2]) * vel[0] * (C_theta ** 2) * C_psi) + I[0] * vel[2] * S_psi * C_psi - I[1] * vel[2] * \
-               (S_theta ** 2) * S_psi * C_psi - I[2] * vel[2] * (C_theta ** 2) * S_psi * C_psi
-        C_33 = (I[1] - I[2]) * vel[0] * C_theta * S_theta * (C_psi ** 2) - I[1] * vel[1] * (
-                    S_theta ** 2) * C_psi * S_psi - I[2] * vel[
-                   1] * (C_theta ** 2) * C_psi * S_psi + I[0] * vel[1] * C_psi * S_psi
+        C_23 = (-I[0] * vel[2] * S_psi * C_psi) + (I[1] * vel[2] * (S_theta ** 2) * S_psi * C_psi) + (I[2] * vel[2] * (
+                    C_theta ** 2) * S_psi * C_psi)
+        C_31 = ((I[1] - I[2]) * vel[2] * C_theta * S_theta * (C_psi ** 2)) - (I[0] * vel[1] * C_psi)
+        C_32 = ((I[2] - I[1]) * ((vel[1] * C_theta * S_theta * S_psi) + (vel[0] * S_theta ** 2 * C_psi))) + (
+                    (I[1] - I[2]) * vel[0] * (C_theta ** 2) * C_psi) + (I[0] * vel[2] * S_psi * C_psi) - (I[1] * vel[2] * \
+               (S_theta ** 2) * S_psi * C_psi) - (I[2] * vel[2] * (C_theta ** 2) * S_psi * C_psi)
+        C_33 = ((I[1] - I[2]) * vel[0] * C_theta * S_theta * (C_psi ** 2)) - (I[1] * vel[1] * (
+                    S_theta ** 2) * C_psi * S_psi) - (I[2] * vel[1] * (C_theta ** 2) * C_psi * S_psi) + (I[0] * vel[1] * C_psi * S_psi)
 
         C = np.array([[C_11, C_12, C_13],
                       [C_21, C_22, C_23],
@@ -209,19 +214,19 @@ class AngAccel(Torque):
         """
         ang = np.array([X_ang[0], X_ang[1], X_ang[2]])
         vel = np.array([X_ang[3], X_ang[4], X_ang[5]])
-        t = Torque()
+        t = Torque(self._l, self._k, self._b)
         T_b = t(w)
         T_b = np.squeeze(T_b)
 
         J = self.Jacobian(ang)
         C = self.Coroilis_force(X_ang)
-        diff = T_b - (np.matmul(C, vel))
+        diff = T_b - (C.dot(vel))
         Jinv = np.linalg.inv(J)
         ang_acc = Jinv.dot(diff)
         # ang_acc = np.expand_dims(ang_acc, axis=1)
         ang_dot = np.concatenate((vel, ang_acc))
         return ang_dot
-    
+
     
  class Animation(LinAccel):
     def __init__(self, pause: float, fps: float, m: float, k: float, g: float, l: float, b: float) -> None:
@@ -244,6 +249,7 @@ class AngAccel(Torque):
         self.g = g
         self.l = l
         self.b = b
+
 
     def animate(self, t: npt.ArrayLike, Xpos: npt.ArrayLike, Xang: npt.ArrayLike) -> None:
         """
@@ -285,7 +291,7 @@ class AngAccel(Torque):
             ang = np.array([theta, psi, phi])
             R = self.Rotation_matrix(ang)
 
-            new_axle_x = np.zeros((p2, q2))
+            new_axle_x = np.zeros((p2,q2))
             for i in range(0,p2):
                 r_body = axle_x[i,:]
                 r_world = R.dot(r_body)
@@ -294,7 +300,7 @@ class AngAccel(Torque):
             new_axle_x = np.array([x, y, z]) + new_axle_x
             # print(new_axle_x)
 
-            new_axle_y = np.zeros((p2, q2))
+            new_axle_y = np.zeros((p2,q2))
             for i in range(0,p2):
                 r_body = axle_y[i,:]
                 r_world = R.dot(r_body)
@@ -307,9 +313,9 @@ class AngAccel(Torque):
             axle1, = ax.plot(new_axle_x[:, 0],new_axle_x[:, 1],new_axle_x[:, 2], 'ro-', linewidth=3)
             axle2, = ax.plot(new_axle_y[:, 0], new_axle_y[:, 1], new_axle_y[:, 2], 'bo-', linewidth=3)
 
-            ax.set_xlim(-0.5, 0.5)
-            ax.set_ylim(-0.5, 0.5)
-            ax.set_zlim(-0.5, 0.5)
+            ax.set_xlim(-2, 2)
+            ax.set_ylim(-1, 1)
+            ax.set_zlim(-1, 1)
             ax.view_init(azim=-72, elev=20)
 
             plt.pause(self.pause)
