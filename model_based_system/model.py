@@ -128,21 +128,20 @@ class Torque:
 
 
 class AngAccel(Torque):
-    def __init__(self, I: npt.ArrayLike, ) -> None:
-        def __init__(self, I, l, k, b) -> None:
-        """
-        Calculate angular accelerations equation (20) in the pdf.
-        given:
-            Inertia matrix: (1x3)
-        """
-        super().__init__(l, k, b)
-        # l = 0.225  # in m
-        # k = 2.980e-6  # this is to be found via calculation
-        # b = 1.140e-7  # this is to be found via calculation
-        self.I = I
-        self._l = l
-        self._k = k
-        self._b = b
+    def __init__(self, I, l, k, b) -> None:
+    """
+    Calculate angular accelerations equation (20) in the pdf.
+    given:
+        Inertia matrix: (1x3)
+    """
+    super().__init__(l, k, b)
+    # l = 0.225  # in m
+    # k = 2.980e-6  # this is to be found via calculation
+    # b = 1.140e-7  # this is to be found via calculation
+    self.I = I
+    self._l = l
+    self._k = k
+    self._b = b
 
     def Jacobian(self, X_ang: npt.ArrayLike) -> np.ndarray:
         """
