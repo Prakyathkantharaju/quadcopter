@@ -1,5 +1,6 @@
 # Author: Subramanian - Added the code that simulates the drone using Python Matplotlib animation - 09/29/2022
 # Author: Subramanian - Updated the code that involves hover control and simulates it using Matplotlib - 10/13/2022
+# Author: Subramanian - Fixed the bug and stabilization controller is working - 10/14/2022
 
 from model import LinAccel, AngAccel, Animation
 import numpy as np
@@ -25,7 +26,7 @@ I = np.array([Ixx, Iyy, Izz])
 K_z = np.array([1.5, 2.5])
 K_psi = np.array([6, 1.75])
 K_theta = np.array([6, 1.75])
-K_phi = np.array([6, 1.75])
+K_phi = np.array([-6, -1.75])
 Ax = 0.25
 Ay = 0.25
 Az = 0.25
