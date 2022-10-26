@@ -60,33 +60,27 @@ class LinAccel(object):
         Ay = A[1]
         Az = A[2]
         lin_vel = np.array([X_lin[3], X_lin[4], X_lin[5]], dtype='float64')
-        lin_vel = lin_vel.reshape(3, 1)
         # lin_vel = np.expand_dims(lin_vel, axis=1)
-        ang = np.array([X_ang[0], X_ang[1], X_ang[2]], dtype='float64')
-        ang = ang.reshape(3, 1)
+        ang = np.array([X_ang[self.i][0], X_ang[self.i][1], X_ang[self.i][2]], dtype='float64')
         w1 = w[0]
         w2 = w[1]
         w3 = w[2]
         w4 = w[3]
         T = np.array([0, 0, self._k * (w1**2 + w2**2 + w3**2 + w4**2)], dtype='float64')
-        T = T.reshape(3, 1)
-        G = np.array([0, 0, -self._g])
-        G = G.reshape(3, 1)
+        G = np.array([0, 0, -self._g]) / self._m
         R = self.Rotation_matrix(ang)
         thrust = R.dot(T) / self._m
         drag_coeffs = np.array([[Ax, 0, 0],
                                 [0, Ay, 0],
                                 [0, 0, Az]], dtype='float64')
         drag_dyn = drag_coeffs.dot(lin_vel)
-        drag_dyn = drag_dyn.reshape(3, 1)
         drag = drag_dyn / self._m
         lin_acc = G + thrust - drag
         # lin_acc = np.expand_dims(lin_acc, axis=1)
         lin_dot = np.concatenate((lin_vel, lin_acc))
-        lin_dot = lin_dot.reshape(6,)
-        # self.i += 1
-        # if self.i == len(X_ang):
-        #     self.i -= 1
+        self.i += 1
+        if self.i == len(X_ang):
+            self.i -= 1
         return lin_dot
 
 
