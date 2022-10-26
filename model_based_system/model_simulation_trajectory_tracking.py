@@ -1,3 +1,5 @@
+# Author: Subramanian - Included the code for low-level control trajectory tracking of quadcopter - 10/26/2022
+
 from model_workinprogress import LinAccel, AngAccel, Animation
 import numpy as np
 import matplotlib.pyplot as plt
@@ -57,28 +59,9 @@ A = np.array([Ax, Ay, Az])
 # t = Torque(l, k, b)
 omega0 = np.array([620, 620, 620, 620])
 omega0 = np.expand_dims(omega0, axis=1)
-# T_b = t(w)
-#
-# x0, y0, z0, vx0, vy0, vz0 = [0, 0, 0, 0, 0, 0]
-# theta0, psi0, phi0, thetadot0, psidot0, phidot0 = [0, 0, 0, 0, 0, 0]
-# X_lin_0 = np.array([x0, y0, z0, vx0, vy0, vz0], dtype='float64')
-# X_ang_0 = np.array([theta0, psi0, phi0, thetadot0, psidot0, phidot0], dtype='float64')  # Initial values
-# X_0 = np.concatenate([X_lin_0, X_ang_0])
 
 lin = LinAccel(m, k, g)
 angacc = AngAccel(I, l, k, b_drag_const)
-# xddot = np.concatenate((lin_acc, ang_acc), axis=None)  # This is a 6 x 1 vector giving the accelerations of the system
-# xddot = np.expand_dims(xddot, axis=1)
-# print(xddot)
-
-# parms_ang = (omega, )
-# X_ang = odeint(angacc.angular_acceleration, X_ang_0, t, args=parms_ang)
-# assert X_ang.shape == (len(t), 6), f'The angular acceleration should be in len(t) x 6 shape'
-
-# parms_lin = (X_ang, omega, A)
-# X_pos = odeint(lin.linear_acceleration, X_lin_0, t, args=parms_lin)
-# assert X_pos.shape == (len(t), 6), f'The linear acceleration should be in len(t) x 6 shape'
-
 
 # Desired trajectory: Lemniscate
 h = 0.005
@@ -88,8 +71,6 @@ N = int((tN-t0)/h) + 1
 t = np.linspace(t0, tN, N)
 T = t[N-1]
 
-# x_0 = 0
-# y_0 = 0.5
 A_const = 0.5
 B = 0.5
 a = 2
@@ -99,10 +80,6 @@ phi = np.zeros(N)
 phidot = np.zeros(N)
 phiddot = np.zeros(N)
 phitdot = np.zeros(N)
-# theta = np.zeros(N)
-# thetadot = np.zeros(N)
-# psi = np.zeros(N)
-# psidot = np.zeros(N)
 
 tau = 2*mpi*(-15*(t/T)**4+6*(t/T)**5+10*(t/T)**3)
 taudot = 2*mpi*(-15*4*(1/T)*(t/T)**3+6*5*(1/T)*(t/T)**4+10*3*(1/T)*(t/T)**2)
@@ -111,17 +88,6 @@ tautdot = 2*mpi*(-15*4*3*2*(1/T)**3*(t/T) + 6*5*4*3*(1/T)**3*(t/T)**2 + 10*3*2*(
 # taujdot = 2*mpi*(-15*4*3*2*(1/T)**3 + 6*5*4*3*2*(1/T)**4*(t/T))
 
 '''# Trajectory: Lemniscate'''
-# Gains that give beter tracking:
-# Kp = np.array([1.85*5, 7.55, 1.85*5])
-# Kd = np.array([0.75*10, 0.75*10, 0.75*10])
-# Kdd = np.array([1.00, 1.00, 1.00])
-# Ki = np.array([1.5*5, 1.5*5, 1.5*5])
-
-# Another set of gains for good trajectory tracking:
-# Kp = np.array([1.85*5, 7.55, 1.85*5])
-# Kd = np.array([0.75*10, 0.75*10, 0.75*5])
-# Kdd = np.array([1.00, 1.00, 1.00])
-# Ki = np.array([1.5, 1.5, 1.5])
 
 x_ref = B*np.cos(b*tau)
 y_ref = A_const*np.sin(a*tau)
@@ -141,19 +107,6 @@ j_z = np.zeros(N)
 # joun_z = np.zeros(N)
 
 '''# Trajectory: Circle'''
-# Gains that gives better tracking:
-
-# Kp = np.array([1.85*4, 8.55, 1.85*4])
-# Kd = np.array([0.75*15, 0.75*15, 0.75*15])
-# Kdd = np.array([1.00, 1.00, 1.00])
-# Ki = np.array([1.5*5, 1.5*5, 1.5*5])
-
-# Another set of good gains:
-
-# Kp = np.array([1.85*5, 7.55, 1.85*6])
-# Kd = np.array([0.75*15, 0.75*15, 0.75*15])
-# Kdd = np.array([1.00, 1.00, 1.00])
-# Ki = np.array([1.5*5, 1.5*5, 1.5*5])
 
 # x_ref = A_const*np.cos(tau)
 # y_ref = A_const*np.sin(tau)
@@ -170,13 +123,6 @@ j_z = np.zeros(N)
 # j_z = np.zeros(N)
 
 '''# Trajectory: sine curve'''
-# Gains that gives better tracking:
-
-# Kp = np.array([1.87*4.5, 10.55, 1.87*4.5])
-# Kd = np.array([0.75*15, 0.75*15, 0.75*15])
-# Kdd = np.array([1.00, 1.00, 1.00])
-# Ki = np.array([1.5*5, 1.5*5, 1.5*5])
-
 # x_ref = tau
 # y_ref = np.sin(tau)
 # z_ref = np.zeros(N)
@@ -212,12 +158,10 @@ j_z = np.zeros(N)
 x0 = x_ref[0]
 y0 = y_ref[0]
 z0 = z_ref[0]
-# x0 = 0
-# y0 = 0
-# z0 = 1
 vx0 = 0
 vy0 = 0
 vz0 = 0
+
 theta0, psi0, phi0, thetadot0, psidot0, phidot0 = [0, 0, 0, 0, 0, 0]
 # theta0, psi0, phi0, thetadot0, psidot0, phidot0 = [np.deg2rad(10), np.deg2rad(10), np.deg2rad(10), 0, 0, 0]
 X_lin_0 = np.array([x0, y0, z0, vx0, vy0, vz0], dtype='float64')
@@ -262,11 +206,7 @@ for i in range(0,N-1):
     linacc, jerk = lin.linear_acceleration_duplicate(X_lin_0, t_temp, X_ang_0, omega, A, lin_acc_prev)
     actual_traj_values = np.array([X_lin_0[0], X_lin_0[1], X_lin_0[2], X_lin_0[3], X_lin_0[4], X_lin_0[5], linacc[0], linacc[1], linacc[2], jerk[0], jerk[1], jerk[2]])
     control = Controller(K_z, K_psi, K_theta, K_phi, Kp, Kd, Kdd, Ki, A, k, l, b_drag_const)
-    # desired_state, thetadot, psidot = control.get_desired_positions(t_temp, desired_traj_values, actual_traj_values)
     desired_state = control.get_desired_positions(t_temp, desired_traj_values, actual_traj_values)
-    # THETADOT.append(thetadot)
-    # PSIDOT.append(psidot)
-    # desired_state = np.array([z_ref[i], v_z[i], theta[i], thetadot[i], psi[i], psidot[i], phi[i], phidot[i]])
     parms_ang = (omega, )
     X_ang = odeint(angacc.angular_acceleration, X_ang_0, t_temp, args=parms_ang)
     assert X_ang.shape == (2, 6), f'The angular acceleration should be in 1 x 6 shape'
@@ -290,8 +230,6 @@ for i in range(0,N-1):
     X_ang_0 = X_ang[1]
     X_lin_0 = X_pos[1]
     lin_acc_prev = linacc.reshape(len(linacc), )
-    # X_POS.append(X_pos[1])
-    # X_ANG.append(X_ang[1])
     X_POS[i+1, 0] = X_pos[1][0]
     X_POS[i+1, 1] = X_pos[1][1]
     X_POS[i+1, 2] = X_pos[1][2]
@@ -340,15 +278,6 @@ ax4 = plt.subplot(111)
 plt.plot(X_POS[:,0], X_POS[:,1], color='black', marker='o', markersize=2)
 plt.plot(x_ref, y_ref, color='blue', linestyle='-')
 ax4.set_aspect('equal')
-
-# plt.subplot(412)
-# plt.plot(v_x, v_y, color='blue', linestyle='-')
-#
-# plt.subplot(413)
-# plt.plot(a_x, a_y, color='blue', linestyle='-')
-#
-# plt.subplot(414)
-# plt.plot(j_x, j_y, color='blue', linestyle='-')
 
 fig5 = plt.figure()
 ax5 = plt.subplot(411)
