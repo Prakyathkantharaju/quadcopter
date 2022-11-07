@@ -5,10 +5,10 @@ import numpy as np
 import numpy.typing as npt
 
 
-
 class Controller:
-    def __init__(self, K_z: npt.ArrayLike, K_psi: npt.ArrayLike, K_theta: npt.ArrayLike, K_phi: npt.ArrayLike, A: npt.ArrayLike, k: float,
-                l: float, b: float) -> None:
+    def __init__(self, K_z: npt.ArrayLike, K_psi: npt.ArrayLike, K_theta: npt.ArrayLike, K_phi: npt.ArrayLike, Kp: npt.ArrayLike,
+                 Kd: npt.ArrayLike, Kdd: npt.ArrayLike, Ki: npt.ArrayLike, A: npt.ArrayLike, k: float,
+                 l: float, b: float) -> None:
         self.K_z = K_z
         self.K_psi = K_psi
         self.K_theta = K_theta
@@ -30,9 +30,8 @@ class Controller:
         self.Kdx, self.Kdy, self.Kdz = Kd
         self.Kddx, self.Kddy, self.Kddz = Kdd
         self.Kix, self.Kiy, self.Kiz = Ki
-
         
-    def get_desired_positions(self, t_step, des_traj_vals) -> np.ndarray:
+    def get_desired_positions(self, t_step, des_traj_vals, act_traj_vals) -> np.ndarray:
         """
         Get the desired trajectory values for feeding them into the controller as desired values. In this case, the
         desired trajectory is Lemniscate.
@@ -48,6 +47,8 @@ class Controller:
         phi, phidot, phiddot, phitdot = des_traj_vals[12:16]
 
         x, y, z = act_traj_vals[0:3]
+        y += 0.001*np.random.random(size=1)[0]
+        z += + 0.01*np.random.random(size=1)[0]
         v_x, v_y, v_z = act_traj_vals[3:6]
         a_x, a_y, a_z = act_traj_vals[6:9]
         j_x, j_y, j_z = act_traj_vals[9:12]
@@ -161,14 +162,14 @@ class Controller:
         w_3 = np.sqrt(T[0] / (4 * self.k) + T[2] / (2 * self.k * self.l) - T[3] / (4 * self.b))
         w_4 = np.sqrt(T[0] / (4 * self.k) + T[1] / (2 * self.k * self.l) + T[3] / (4 * self.b))
 
-        print("---------------------------------------------------------------------------")
-
-        print(T[0] / (4 * self.k), -T[2] / (2 * self.k * self.l), -T[3] / (4 * self.b))
-        print(T[0] / (4 * self.k), - T[1] / (2 * self.k * self.l), + T[3] / (4 * self.b))
-        print(T[0] / (4 * self.k), T[2] / (2 * self.k * self.l), - T[3] / (4 * self.b))
-        print(T[0] / (4 * self.k), T[1] / (2 * self.k * self.l), T[3] / (4 * self.b))
-
-        print("---------------------------------------------------------------------------")
+        # print("---------------------------------------------------------------------------")
+        #
+        # print(T[0] / (4 * self.k), -T[2] / (2 * self.k * self.l), -T[3] / (4 * self.b))
+        # print(T[0] / (4 * self.k), - T[1] / (2 * self.k * self.l), + T[3] / (4 * self.b))
+        # print(T[0] / (4 * self.k), T[2] / (2 * self.k * self.l), - T[3] / (4 * self.b))
+        # print(T[0] / (4 * self.k), T[1] / (2 * self.k * self.l), T[3] / (4 * self.b))
+        #
+        # print("---------------------------------------------------------------------------")
 
         rotor_speeds_fdbk = np.array([w_1, w_2, w_3, w_4])
         return rotor_speeds_fdbk.reshape(len(rotor_speeds_fdbk), 1)

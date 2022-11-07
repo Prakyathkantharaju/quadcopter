@@ -1,6 +1,6 @@
 # Author: Subramanian - Included the code for low-level control trajectory tracking of quadcopter - 10/26/2022
 
-from model_workinprogress import LinAccel, AngAccel, Animation
+from model import LinAccel, AngAccel, Animation
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
@@ -8,8 +8,6 @@ from scipy.integrate import odeint
 import sys
 from controller import Controller
 
-sys.path.append('C:\\UIC courses\\ME 510 - Robotic Manipulators course\\Project\\quadcopter-main\\controller')
-print(sys.path)
 
 pause = 0.005
 fps = 1

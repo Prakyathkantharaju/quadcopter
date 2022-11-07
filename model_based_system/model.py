@@ -45,6 +45,52 @@ class LinAccel(object):
 
         return R
 
+    def linear_acceleration_duplicate(self, X_lin, time, X_ang, w, A, prev_acc):
+        """
+        Calculate Linear accelerations equation 10 or 15 in PDF
+        :param A: Drag constants: Size = (3, )
+        :param w: quadrotor motor speeds : Size = 4 x 1
+        :param X_ang: All the angular positions and angular velocities that's been integrated across the time steps
+        from 0 to T. Shape is : (101, 6) for T = 101. The elements in
+        each row of X_ang are: [theta, psi, phi, theta_dot, psi_dot, phi_dot]
+        :return: Derivative of linear vector : Shape = (6, 1). The elements are derivatives of 'X_lin'.
+        """
+        # X_lin = np.array([X0[0], X0[1], X0[2], X0[3], X0[4], X0[5]])
+        # X_ang = np.array([X0[6], X0[7], X0[8], X0[9], X0[10], X0[11]])
+        Ax = A[0]
+        Ay = A[1]
+        Az = A[2]
+        lin_vel = np.array([X_lin[3], X_lin[4], X_lin[5]], dtype='float64')
+        lin_vel = lin_vel.reshape(3, 1)
+        # lin_vel = np.expand_dims(lin_vel, axis=1)
+        ang = np.array([X_ang[0], X_ang[1], X_ang[2]], dtype='float64')
+        ang = ang.reshape(3, 1)
+        w1 = w[0]
+        w2 = w[1]
+        w3 = w[2]
+        w4 = w[3]
+        T = np.array([0, 0, self._k * (w1**2 + w2**2 + w3**2 + w4**2)], dtype='float64')
+        T = T.reshape(3, 1)
+        G = np.array([0, 0, -self._g])
+        G = G.reshape(3, 1)
+        R = self.Rotation_matrix(ang)
+        thrust = R.dot(T) / self._m
+        drag_coeffs = np.array([[Ax, 0, 0],
+                                [0, Ay, 0],
+                                [0, 0, Az]], dtype='float64')
+        drag_dyn = drag_coeffs.dot(lin_vel)
+        drag_dyn = drag_dyn.reshape(3, 1)
+        drag = drag_dyn / self._m
+        lin_acc = G + thrust - drag
+        # lin_acc = np.expand_dims(lin_acc, axis=1)
+        # lin_dot = np.concatenate((lin_vel, lin_acc))
+        # lin_dot = lin_dot.reshape(6,)
+        jerk = (lin_acc.reshape(len(lin_acc), ) - prev_acc) / time[-1]
+        # self.i += 1
+        # if self.i == len(X_ang):
+        #     self.i -= 1
+        return lin_acc, jerk
+
     def linear_acceleration(self, X_lin: npt.ArrayLike, time, X_ang: npt.ArrayLike, w: npt.ArrayLike, A: npt.ArrayLike) -> np.ndarray:
         """
         Calculate Linear accelerations equation 10 or 15 in PDF
@@ -78,14 +124,14 @@ class LinAccel(object):
         lin_acc = G + thrust - drag
         # lin_acc = np.expand_dims(lin_acc, axis=1)
         lin_dot = np.concatenate((lin_vel, lin_acc))
-        self.i += 1
-        if self.i == len(X_ang):
-            self.i -= 1
+        lin_dot = lin_dot.reshape(6,)
+        # self.i += 1
+        # if self.i == len(X_ang):
+        #     self.i -= 1
         return lin_dot
 
 
 # Given the theta, psi and phi -> angular accel in body frame.
-
 
 
 class Torque:
@@ -314,5 +360,6 @@ class Animation(LinAccel):
             plt.pause(self.pause)
 
         plt.close()
-        
+
+
 fig = plt.figure()

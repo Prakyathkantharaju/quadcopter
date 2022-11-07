@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="hover_PPO">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/hover_PPO.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
